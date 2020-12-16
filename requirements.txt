@@ -1,11 +1,5 @@
 ###### Requirements without Version Specifiers ######
-numpy
-csv
-streamlit
-pydeck
-pandas
-mapbox
-matplotlib.pyplot
+
 
 ###### Requirements with Version Specifiers ######
 #   See https://www.python.org/dev/peps/pep-0440/#version-specifiers
