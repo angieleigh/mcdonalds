@@ -6,26 +6,19 @@ import pandas as pd
 import mapbox as mb
 import matplotlib.pyplot as plt
 
-# """
-# Name: Angie Leigh \n
-# CS230: Section SN5 \n
-# Data: McDonald's \n
-# URL: Link to your web application online (see extra credit)
-#
-# Description: This program ... (a few sentences about your program and the queries and charts)
-# """
-
+# heading with pink background and white text using HTML
 st.markdown(
     """<p style="text-align:center; background-color: #FC89D8; color: white;">
     Name: Angie Leigh <br>
     CS230: Section SN5 <br>
     Data: McDonald's <br>
     URL: Link to your web application online (see extra credit) <br>
-    Description: This program ... (a few sentences about your program and the queries and charts)  </p>
+    Description: This program allows the user to analyze McDonald's locations by location, feature, and/or store type using maps, bar graphs, and pie charts.  </p>
     """,
     unsafe_allow_html=True,
 )
 
+# fun rainbow title using HTML
 Title_html = """
     <style>
         .title h1{
@@ -56,41 +49,52 @@ Title_html = """
 st.markdown(Title_html, unsafe_allow_html=True)
 
 
+# read in data from file into data frame and return df
 def read_data(file):
     df = pd.read_csv(file)
     return df
 
 
+# show table of passed in df
 def show_data(df):
     st.write(df)
 
 
+# 4 options for filtering the passed in df which are mutually inclusive
 def widgets(df):
     st.sidebar.write("Filter Options")
+    # filter by city, allow lowercase input
     city = st.sidebar.text_input("Enter your city: ").upper()
+    # make list of all cities in df then check if input is valid
     cities = df['city'].tolist()
     if city in cities:
         st.sidebar.write("That city is valid.")
+        # update df
         is_city = df['city'] == city
         df = df[is_city]
     else:
         st.sidebar.write("That city is not valid!")
 
+    # filter by state, allow lowercase input
     state = st.sidebar.text_input("Enter your state: ").upper()
+    # make list of all states in df then check if input is valid
     states = df['state'].tolist()
     if state in states:
         st.sidebar.write("That state is valid.")
+        # update df
         is_state = df['state'] == state
         df = df[is_state]
     else:
         st.sidebar.write("That state is not valid!")
 
+    # filter by feature
     st.sidebar.write("Features:")
     playplace = st.sidebar.checkbox("Play Place", False)
     drivethru = st.sidebar.checkbox("Drive Thru", False)
     archcard = st.sidebar.checkbox("Arch Card", False)
     freewifi = st.sidebar.checkbox("Free Wi-Fi", False)
 
+    # update df
     if playplace:
         is_play = df['playplace'] == 'Y'
         df = df[is_play]
@@ -104,14 +108,17 @@ def widgets(df):
         is_free = df['freeWifi'] == 'Y'
         df = df[is_free]
 
+    # count number of stores with each feature
     playCount = len(df[df['playplace'] == 'Y'])
     driveCount = len(df[df['driveThru'] == 'Y'])
     archCount = len(df[df['archCard'] == 'Y'])
     wifiCount = len(df[df['freeWifi'] == 'Y'])
 
+    # create lists to be graphed
     x = ['playPlace', 'driveThru', 'archCard', 'freeWifi']
     y = [playCount, driveCount, archCount, wifiCount]
 
+    # count number of stores of each type
     freeCount = len(df[df['storeType'] == 'FREESTANDING'])
     sharedCount = len(df[df['storeType'] == 'SHARED BLDNG'])
     gasCount = len(df[df['storeType'] == 'GAS STATION'])
@@ -123,18 +130,36 @@ def widgets(df):
     storeCount = len(df[df['storeType'] == 'STOREFRONT'])
     airCount = len(df[df['storeType'] == 'AIRPORT'])
 
-    x2 = ['FREESTANDING', 'SHARED BLDNG', 'GAS STATION', 'HOSPITAL', 'WAL*MART', 'BUS/TRAIN', 'MALL', 'TOLLWAY', 'STOREFRONT', 'AIRPORT']
-    y2 = [freeCount, sharedCount, gasCount, hospitalCount, walCount, busCount, mallCount, tollCount, storeCount, airCount]
+    # create lists to be graphed
+    x2 = ['FREESTANDING', 'SHARED BLDNG', 'GAS STATION', 'HOSPITAL', 'WAL*MART', 'BUS/TRAIN', 'MALL', 'TOLLWAY',
+          'STOREFRONT', 'AIRPORT']
+    y2 = [freeCount, sharedCount, gasCount, hospitalCount, walCount, busCount, mallCount, tollCount, storeCount,
+          airCount]
 
+    # graph options
+    st.sidebar.write("Chart Options")
+    charts = ['Features Pie Chart', 'Features Bar Graph', 'Store Type Pie Chart', 'Store Type Bar Graph']
+    chart = st.sidebar.radio("Select a graph: ", charts)
+
+    # call functions (must be done here, not earlier, so that it is updated with user selections)
     show_data(df)
     map_data(df)
-    # pie_plot(x, y, "What features do McDonald's have?")
-    pie_plot(x2, y2, "What kinds of stores are these?")
-    # bar_plot(x, y, "What features do McDonald's have?", "Features")
-    # bar_plot(x2, y2, "What kinds of stores are these?", "Kind")
+
+    # graph data if it can be graphed based on user selection
+    if len(df) > 0:
+        if chart == 'Features Pie Chart':
+            pie_plot(x, y, "What features do McDonald's have?")
+        elif chart == 'Store Type Pie Chart':
+            pie_plot(x2, y2, "What kinds of stores are these?")
+        elif chart == 'Features Bar Graph':
+            bar_plot(x, y, "What features do McDonald's have?", "Features")
+        elif chart == 'Store Type Bar Graph':
+            bar_plot(x2, y2, "What kinds of stores are these?", "Kind")
 
 
+# map data from passed in df
 def map_data(df):
+    # fun rainbow title using HTML
     Title_html = """
     <style>
         .title h1{
@@ -164,9 +189,11 @@ def map_data(df):
     """
     st.markdown(Title_html, unsafe_allow_html=True)
 
+    # map coordinates
     df = pd.DataFrame({'lat': df['Y'], 'lon': df['X']})
     st.map(df)
 
+    # fun rainbow title using HTML
     Title_html = """
     <style>
         .title h1{
@@ -196,12 +223,12 @@ def map_data(df):
     """
     st.markdown(Title_html, unsafe_allow_html=True)
 
+    # create parts for map with tool tips
     view_state = pdk.ViewState(
         latitude=df["lat"].mean(),
         longitude=df["lon"].mean(),
         zoom=15,
         pitch=0)
-
     layer1 = pdk.Layer('ScatterplotLayer',
                        df,
                        get_position='[lon, lat]',
@@ -213,9 +240,7 @@ def map_data(df):
                 "style": {"backgroundColor": "pink",
                           "color": "white"}
                 }
-
     MAPKEY = "pk.eyJ1IjoiYW5naWVsZWlnaCIsImEiOiJja2lqb2loeWEwMXhqMnZqejlzMmgwczRsIn0.Fqspp_wwMHKa1YH2fx6wvA"
-
     map1 = pdk.Deck(
         map_style='mapbox://styles/mapbox/light-v9',
         initial_view_state=view_state,
@@ -224,13 +249,16 @@ def map_data(df):
         tooltip=tool_tip
     )
 
+    # map df with tool tips if it can be graphed
     if len(df) > 0:
         st.pydeck_chart(map1)
     else:
         st.write("No data!")
 
 
+# create bar plot from passed in data
 def bar_plot(x, y, title, xlabel):
+    # fun rainbow title using HTML
     Title_html = """
     <style>
         .title h1{
@@ -260,6 +288,7 @@ def bar_plot(x, y, title, xlabel):
     """
     st.markdown(Title_html, unsafe_allow_html=True)
 
+    # plot with specifications
     plt.bar(x, y, align='center', color='mediumspringgreen', edgecolor='white', linewidth=3)
     plt.xticks(rotation=45)
     plt.title(title)
@@ -269,7 +298,9 @@ def bar_plot(x, y, title, xlabel):
     return plt
 
 
+# create pie chart from passed in data
 def pie_plot(x, y, title):
+    # fun rainbow title using HTML
     Title_html = """
     <style>
         .title h1{
@@ -299,18 +330,23 @@ def pie_plot(x, y, title):
     """
     st.markdown(Title_html, unsafe_allow_html=True)
 
+    # plot with specifications
     plt.pie(y, labels=x)
     plt.legend()
     plt.title(title)
     st.pyplot(plt)
 
 
+# main program
 def main():
+    # get df
     df = read_data("mcdonalds_clean.csv")
+    # call widgets, pass in df
     widgets(df)
-
+    # 2 blank lines
     st.write("\n")
     st.write("\n")
+    # picture and text linking to McDonald's website
     st.markdown("## Feeling hungry?")
     st.markdown(
         """<a style='display: block; font-size: 20px; color: #FFC300; text-align: center;' href="https://www.mcdonalds.com/us/en-us.html"> <img src="https://logos-world.net/wp-content/uploads/2020/04/McDonalds-Logo-700x394.png">Click for McDonald's Website</a>
@@ -319,4 +355,5 @@ def main():
     )
 
 
+# run
 main()
